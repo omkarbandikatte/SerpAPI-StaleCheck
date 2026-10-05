@@ -1,0 +1,11 @@
+fastapi>=0.115,<1
+uvicorn[standard]>=0.34,<1
+pydantic>=2.10,<3
+python-multipart>=0.0.20,<1
+pymupdf>=1.25,<2
+google-genai>=1.11,<2
+json-repair>=0.50,<1
+httpx>=0.28,<1
+python-dotenv>=1.0,<2
+psycopg[binary,pool]>=3.2,<4
+PyJWT[crypto]>=2.10,<3

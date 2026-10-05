@@ -1,11 +1,23 @@
 from datetime import date
+from time import monotonic
 from uuid import UUID
 
+from psycopg import Connection
 from psycopg_pool import ConnectionPool
 from psycopg.rows import dict_row
 from psycopg.types.json import Jsonb
 
 from .models import CheckStatus, Progress, Report
+
+HEALTH_CHECK_INTERVAL_SECONDS = 300
+
+
+def check_connection(connection: Connection) -> None:
+    now = monotonic()
+    last_probe = getattr(connection, "_stalecheck_last_probe", now)
+    if connection.closed or now - last_probe >= HEALTH_CHECK_INTERVAL_SECONDS:
+        ConnectionPool.check_connection(connection)
+        connection._stalecheck_last_probe = now
 
 
 class PostgresStore:
@@ -17,7 +29,7 @@ class PostgresStore:
             database_url,
             min_size=1,
             max_size=8,
-                check=ConnectionPool.check_connection,
+            check=check_connection,
             kwargs={"row_factory": dict_row},
             open=True,
         )

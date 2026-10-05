@@ -9,7 +9,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from . import config
 
 bearer = HTTPBearer(auto_error=False)
-_jwks_client = jwt.PyJWKClient(config.NEON_AUTH_JWKS_URL, cache_jwk_set=True, lifespan=300)
+_jwks_client = jwt.PyJWKClient(config.NEON_AUTH_JWKS_URL, cache_jwk_set=True, lifespan=3600)
 
 
 @dataclass(frozen=True)

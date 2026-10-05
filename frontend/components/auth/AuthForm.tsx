@@ -3,9 +3,10 @@
 import { ArrowRight, KeyRound, LoaderCircle } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { FormEvent, useState } from 'react'
+import { FormEvent, useEffect, useState } from 'react'
 
 import { authClient } from '@/lib/auth/client'
+import { listChecks } from '@/lib/api'
 
 function authErrorMessage(error: unknown, fallback: string) {
   const message = error instanceof Error ? error.message : ''
@@ -20,6 +21,8 @@ export function AuthForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
   const isSignUp = mode === 'sign-up'
   const [pending, setPending] = useState(false)
   const [error, setError] = useState('')
+
+  useEffect(() => { router.prefetch('/app') }, [router])
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -40,8 +43,8 @@ export function AuthForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
         setPending(false)
         return
       }
-      router.push('/app')
-      router.refresh()
+      void listChecks().catch(() => undefined)
+      router.replace('/app')
     } catch (authError) {
       setError(authErrorMessage(authError, 'Authentication failed. Please try again.'))
       setPending(false)

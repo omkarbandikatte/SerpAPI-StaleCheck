@@ -239,17 +239,19 @@ svg { width: 1rem; height: 1rem; flex: 0 0 auto; }
 .field-grid input:focus, .auth-form input:focus, .paste-area:focus { border-color: #168b82; }
 .submit-check { margin-top: 1.25rem; }
 .form-error { margin-top: 1rem; color: #bd3824; font-size: .82rem; }
-.history-panel { min-width: 0; }
+.history-panel { min-width: 0; max-height: min(620px, calc(100vh - 7rem)); display: grid; grid-template-rows: auto minmax(0, 1fr); overflow: hidden; }
 .panel-heading { padding: 1.5rem; display: flex; gap: .75rem; align-items: center; border-bottom: 1px solid var(--border); }
 .panel-heading > svg { color: #168b82; }
 .panel-heading h2 { font-size: .95rem; font-weight: 700; }
 .panel-heading p { font-size: .72rem; color: var(--muted-foreground); }
+.history-list { min-width: 0; overflow-y: auto; overscroll-behavior: contain; }
 .history-list a { padding: 1rem 1.25rem; display: flex; align-items: center; justify-content: space-between; gap: .75rem; border-bottom: 1px solid var(--border); }
+.history-list a > div:first-child { min-width: 0; flex: 1; }
 .history-list a:hover { background: #f4f4ec; }
 .history-list strong, .history-list span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .history-list strong { font-size: .82rem; }
 .history-list span { margin-top: .25rem; color: var(--muted-foreground); font-size: .68rem; }
-.score { min-width: 44px; height: 32px; display: grid; place-items: center; background: #c9f45d; border-radius: 4px; font-size: .78rem; font-weight: 800; }
+.score { min-width: 44px; height: 32px; flex: 0 0 auto; display: grid; place-items: center; background: #c9f45d; border-radius: 4px; font-size: .78rem; font-weight: 800; }
 .score.queued, .score.extracting, .score.searching, .score.verifying { min-width: 70px; background: #dcebea; color: #116b64; }
 .score.failed { background: #fee3db; color: #a52f1f; }
 .empty-history { min-height: 300px; padding: 2rem; display: grid; place-content: center; justify-items: center; gap: .8rem; text-align: center; color: var(--muted-foreground); font-size: .82rem; }
@@ -358,6 +360,7 @@ svg { width: 1rem; height: 1rem; flex: 0 0 auto; }
   .workspace-head h1 { font-size: 2.8rem; }
   .memory-stat { display: none; }
   .checker { padding: 1rem; }
+  .history-panel { max-height: min(560px, 70vh); }
   .segmented, .segmented button { width: 100%; }
   .field-grid { grid-template-columns: 1fr; }
   .auth-shell { padding: 4.5rem 1rem 1rem; background: #18211e; }

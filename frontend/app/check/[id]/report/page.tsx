@@ -1,8 +1,9 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { FileText, ListChecks, X } from 'lucide-react'
+import { ArrowLeft, FileText, ListChecks, X } from 'lucide-react'
 import { Header } from '@/components/layout/Header'
 import { getReport } from '@/lib/api'
 import type { Report, VerdictLabel } from '@/lib/types'
@@ -64,6 +65,7 @@ export default function ReportPage() {
   return <>
     <Header />
     <main className="mx-auto max-w-[1440px] px-4 py-6 sm:px-6 lg:px-8 lg:py-9">
+      <Link href="/app" className="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground"><ArrowLeft className="size-4" />Back to workspace</Link>
       <div className="flex flex-col gap-5 border-b border-border pb-6 sm:flex-row sm:items-start sm:justify-between">
         <div className="max-w-3xl"><p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Evidence report</p><h1 className="mt-2 text-2xl font-semibold leading-tight sm:text-3xl">{report.doc_title}</h1><p className="mt-2 text-sm text-muted-foreground">Written {formatDate(report.doc_as_of)} <span className="mx-1.5">·</span> Checked {formatDate(report.checked_at)} <span className="mx-1.5">·</span> {report.claims.length} claims reviewed</p></div>
         <div className="flex items-center justify-between gap-5 sm:justify-end"><FreshnessScore score={report.freshness_score} /><button type="button" onClick={() => setExportOpen(true)} className="rounded-lg border border-border px-4 py-2 text-sm font-semibold hover:bg-muted">Export report</button></div>

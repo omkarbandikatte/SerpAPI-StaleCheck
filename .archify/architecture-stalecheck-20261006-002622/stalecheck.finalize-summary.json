@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "architecture",
+  "quality": "showcase",
+  "specification": {
+    "path": "/Users/pscope/Developer/SerpAPI/.archify/architecture-stalecheck-20261006-002622/candidate.json",
+    "sha256": "d222e2ebb27332670deaeb7a6b5b4fc34da9a85fa7c0e390367aa09d7af9eaab",
+    "bytes": 10010
+  },
+  "artifact": {
+    "path": "/Users/pscope/Developer/SerpAPI/.archify/architecture-stalecheck-20261006-002622/stalecheck.html",
+    "sha256": "f754fd006257c78ea3939cf601c35c40f5e0de13a6b98542f2074f172e9e2714",
+    "bytes": 782108
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "/Users/pscope/Developer/SerpAPI/.archify/architecture-stalecheck-20261006-002622/stalecheck.finalize.json",
+    "summaryReceipt": "/Users/pscope/Developer/SerpAPI/.archify/architecture-stalecheck-20261006-002622/stalecheck.finalize-summary.json",
+    "browserCheckReceipt": "/Users/pscope/Developer/SerpAPI/.archify/architecture-stalecheck-20261006-002622/stalecheck.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.0.1",
+    "availableVersion": "3.0.1",
+    "releaseNotes": null,
+    "checkedAt": "2026-10-05T18:59:19.849Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 2415,
+  "visualReviewRecommendation": {
+    "action": "inspect-route-readability",
+    "signals": {
+      "routesOverSuggestedBends": 1
+    },
+    "reason": "Automated gates passed, but crossings or detours still need perceptual review before claiming visual quality.",
+    "affectedRoutes": {
+      "crossings": [],
+      "detours": [
+        {
+          "relationship": {
+            "id": "store-evidence",
+            "from": "store",
+            "to": "evidence_db",
+            "label": "cosine retrieve · insert chunks",
+            "collectionIndex": 11,
+            "artifactIndex": 12
+          },
+          "bends": 3,
+          "stretch": 1
+        }
+      ],
+      "truncated": false
+    },
+    "hints": [
+      "store → evidence_db needs 3 bends: move node store or evidence_db so they share a row or column with matching centers, or sit diagonally with a clear corner."
+    ],
+    "repair": "Trace these relationships at the desktop viewport. For Architecture, use references/architecture-layout-repair.md: reflow a blocked main path or tangled connected scene, and repair an isolated defect locally only when the surrounding composition is accepted. Preserve all semantic content and user-fixed geometry. Rerun finalize once after the edit."
+  }
+}

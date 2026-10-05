@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "StaleCheck System Architecture",
+    "output": ".archify/architecture-stalecheck-20261006-002622/stalecheck.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/omkarbandikatte/SerpAPI-StaleCheck.git",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "c90a34b7c9422debcf46ac2d6543b6d4d17c0ac1"
+    },
+    "views": [
+      { "id": "auth-flow", "label": "Authentication", "focus": ["user", "web", "auth_routes", "neon_auth", "fastapi", "jwt_guard"], "note": "Neon Auth session on the Next.js side; EdDSA bearer verification on the FastAPI side." },
+      { "id": "check-flow", "label": "Check pipeline", "focus": ["web", "fastapi", "pipeline", "gemini", "serpapi", "store"], "note": "POST /api/checks returns 202 and a background task extracts, searches, verifies and persists." },
+      { "id": "persistence", "label": "Persistence & memory", "focus": ["pipeline", "store", "checks_db", "evidence_db"], "note": "Owner-scoped check rows plus a pgvector evidence memory reused across a user's checks." }
+    ]
+  },
+  "components": [
+    { "id": "user", "type": "external", "label": "Browser user", "sublabel": "signs in · uploads PDF/text", "pos": [40, 60], "size": [170, 68],
+      "sources": [ { "path": "frontend/app/app/page.tsx", "line": 28, "end_line": 43, "label": "submit form" }, { "path": "frontend/components/auth/AuthForm.tsx", "line": 27, "end_line": 52, "label": "sign-in / sign-up" } ] },
+    { "id": "web", "type": "frontend", "label": "Next.js 16 client pages", "sublabel": "/app · /check/[id] · report", "pos": [350, 60], "size": [170, 68],
+      "sources": [ { "path": "frontend/app/app/page.tsx", "line": 36, "end_line": 41, "label": "createCheck" }, { "path": "frontend/app/check/[id]/page.tsx", "line": 32, "end_line": 49, "label": "poll status 1s" }, { "path": "frontend/lib/api.ts", "line": 40, "end_line": 51, "label": "authenticatedFetch" } ] },
+    { "id": "auth_routes", "type": "security", "label": "Auth routes + middleware", "sublabel": "route handler · guards /app", "pos": [660, 60], "size": [170, 68], "tag": "cookie TTL 300s",
+      "sources": [ { "path": "frontend/app/api/auth/[...path]/route.ts", "line": 1, "end_line": 3, "label": "auth.handler()" }, { "path": "frontend/proxy.ts", "line": 3, "end_line": 7, "label": "auth.middleware" }, { "path": "frontend/lib/auth/server.ts", "line": 3, "end_line": 9, "label": "createNeonAuth" } ] },
+    { "id": "neon_auth", "type": "external", "label": "Neon Auth (Better Auth)", "sublabel": "issues EdDSA access tokens", "pos": [970, 60], "size": [170, 68],
+      "sources": [ { "path": "frontend/lib/auth/server.ts", "line": 3, "end_line": 5, "label": "NEON_AUTH_BASE_URL" }, { "path": "backend/app/config.py", "line": 15, "end_line": 16, "label": "JWKS URL" }, { "path": "backend/app/auth.py", "line": 12, "label": "PyJWKClient" } ] },
+
+    { "id": "fastapi", "type": "backend", "label": "FastAPI app", "sublabel": "/api/checks · /health · CORS", "pos": [350, 260], "size": [170, 68],
+      "sources": [ { "path": "backend/app/main.py", "line": 14, "end_line": 27, "label": "app + CORS + store" }, { "path": "backend/app/main.py", "line": 35, "end_line": 75, "label": "POST /api/checks" }, { "path": "backend/app/main.py", "line": 78, "end_line": 101, "label": "GET list/status/report" } ] },
+    { "id": "jwt_guard", "type": "security", "label": "get_current_user", "sublabel": "PyJWT EdDSA · sub → user id", "pos": [660, 260], "size": [170, 68],
+      "sources": [ { "path": "backend/app/auth.py", "line": 11, "end_line": 12, "label": "HTTPBearer + JWKS" }, { "path": "backend/app/auth.py", "line": 22, "end_line": 47, "label": "decode issuer/audience" } ] },
+
+    { "id": "serpapi", "type": "external", "label": "SerpAPI", "sublabel": "google · news · scholar", "pos": [40, 460], "size": [170, 68], "tag": "retry ×1 · after:doc_as_of",
+      "sources": [ { "path": "backend/app/pipeline.py", "line": 171, "end_line": 189, "label": "_search_claim" }, { "path": "backend/app/pipeline.py", "line": 192, "end_line": 212, "label": "_search_engine" }, { "path": "backend/app/config.py", "line": 28, "label": "results per engine" } ] },
+    { "id": "pipeline", "type": "backend", "label": "run_check pipeline", "sublabel": "asyncio.create_task · pymupdf", "pos": [350, 460], "size": [170, 68], "tag": "2 claims in flight",
+      "sources": [ { "path": "backend/app/pipeline.py", "line": 31, "end_line": 105, "label": "run_check" }, { "path": "backend/app/pipeline.py", "line": 24, "end_line": 28, "label": "extract_pdf" }, { "path": "backend/app/pipeline.py", "line": 60, "end_line": 72, "label": "process_claim" } ] },
+    { "id": "gemini", "type": "external", "label": "Google Gemini API", "sublabel": "flash-lite-latest · embed-001", "pos": [970, 460], "size": [170, 68], "tag": "fallback on 404/429/5xx",
+      "sources": [ { "path": "backend/app/pipeline.py", "line": 331, "end_line": 354, "label": "_gemini_json" }, { "path": "backend/app/pipeline.py", "line": 288, "end_line": 303, "label": "_embed_contents 768-d" }, { "path": "backend/app/config.py", "line": 23, "end_line": 25, "label": "model settings" } ] },
+
+    { "id": "store", "type": "backend", "label": "PostgresStore", "sublabel": "psycopg pool 1–8 · dict_row", "pos": [350, 660], "size": [170, 68],
+      "sources": [ { "path": "backend/app/store.py", "line": 23, "end_line": 35, "label": "ConnectionPool" }, { "path": "backend/app/store.py", "line": 37, "end_line": 53, "label": "create" }, { "path": "backend/app/store.py", "line": 71, "end_line": 83, "label": "save_status" } ] },
+    { "id": "checks_db", "type": "database", "label": "checks table", "sublabel": "status · progress · report", "pos": [970, 660], "size": [170, 68], "tag": "filtered by user_id",
+      "sources": [ { "path": "backend/app/store.py", "line": 41, "end_line": 42, "label": "INSERT checks" }, { "path": "backend/app/store.py", "line": 55, "end_line": 60, "label": "SELECT by id+user" }, { "path": "backend/app/store.py", "line": 95, "end_line": 112, "label": "save_report / list" } ] },
+    { "id": "evidence_db", "type": "database", "label": "evidence_chunks table", "sublabel": "pgvector(768) · owner-scoped", "pos": [970, 860], "size": [170, 68], "tag": "cosine ≥ 0.55",
+      "sources": [ { "path": "backend/app/store.py", "line": 114, "end_line": 130, "label": "retrieve_evidence" }, { "path": "backend/app/store.py", "line": 132, "end_line": 161, "label": "save_evidence" }, { "path": "backend/app/pipeline.py", "line": 306, "end_line": 328, "label": "_store_evidence" } ] }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "Next.js 16 frontend · pnpm dev :3000", "wraps": ["web", "auth_routes"] },
+    { "kind": "region", "label": "FastAPI backend · uvicorn :8001", "wraps": ["fastapi", "jwt_guard", "pipeline", "store"] },
+    { "kind": "region", "label": "Neon Postgres · DATABASE_URL", "wraps": ["checks_db", "evidence_db"] }
+  ],
+  "connections": [
+    { "id": "user-web", "from": "user", "to": "web", "label": "HTTPS :3000", "variant": "emphasis" },
+    { "id": "web-auth", "from": "web", "to": "auth_routes", "label": "/api/auth · token" },
+    { "id": "auth-neon", "from": "auth_routes", "to": "neon_auth", "label": "Better Auth HTTPS", "variant": "security" },
+    { "id": "web-api", "from": "web", "to": "fastapi", "label": "Bearer JWT · :8001 · poll 1s", "variant": "emphasis" },
+    { "id": "api-guard", "from": "fastapi", "to": "jwt_guard", "label": "verify bearer JWT", "variant": "security" },
+    { "id": "guard-jwks", "from": "jwt_guard", "to": "neon_auth", "label": "fetch JWKS", "variant": "security" },
+    { "id": "api-pipeline", "from": "fastapi", "to": "pipeline", "label": "202 → create_task(run_check)", "variant": "emphasis" },
+    { "id": "pipeline-serp", "from": "pipeline", "to": "serpapi", "label": "GET search.json" },
+    { "id": "pipeline-gemini", "from": "pipeline", "to": "gemini", "label": "JSON extract · verify · embed 768-d" },
+    { "id": "pipeline-store", "from": "pipeline", "to": "store", "label": "status · report · evidence", "variant": "emphasis" },
+    { "id": "store-checks", "from": "store", "to": "checks_db", "label": "INSERT / UPDATE / SELECT by user_id" },
+    { "id": "store-evidence", "from": "store", "to": "evidence_db", "label": "cosine retrieve · insert chunks", "fromSide": "bottom", "toSide": "left" }
+  ],
+  "cards": [
+    { "dot": "rose", "title": "Authentication", "items": [
+      "proxy.ts middleware redirects unauthenticated /app and /check requests to /auth/sign-in",
+      "Client fetches /api/auth/token, caches it until 30s before exp, and retries once on a 401",
+      "Backend decodes the EdDSA JWT with issuer and audience set to the Neon Auth origin; sub becomes the user id"
+    ] },
+    { "dot": "emerald", "title": "Check lifecycle", "items": [
+      "POST /api/checks accepts one PDF (≤20 MB, %PDF header) or text (≤120,000 chars), inserts a queued row, returns 202",
+      "run_check moves the row through extracting → searching → verifying → done, or failed with a public error",
+      "Claims are processed two at a time; each queries google, google_news and google_scholar in parallel with one retry"
+    ] },
+    { "dot": "violet", "title": "Evidence memory", "items": [
+      "Claim text is embedded with gemini-embedding-001 (768-d) and prior chunks are retrieved by cosine ≥ 0.55 from the same user's other checks",
+      "Evidence snippets are embedded and inserted into evidence_chunks with ON CONFLICT DO NOTHING",
+      "Verdicts are grounded in live search evidence; prior evidence is supplemental context only"
+    ] },
+    { "dot": "amber", "title": "Report", "items": [
+      "Freshness score averages weights: current 100, outdated 55, unverifiable 35, contradicted 15",
+      "Report page exports corrected notes, a changelog and flashcards entirely client-side"
+    ] }
+  ]
+}

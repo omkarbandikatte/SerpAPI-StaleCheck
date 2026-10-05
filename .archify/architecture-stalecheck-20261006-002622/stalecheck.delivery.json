@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "ae47fe30-f123-4506-b944-7cbc87a93900",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "/Users/pscope/Developer/SerpAPI/.archify/architecture-stalecheck-20261006-002622/candidate.json",
+  "output": "/Users/pscope/Developer/SerpAPI/.archify/architecture-stalecheck-20261006-002622/stalecheck.html",
+  "specification": {
+    "sha256": "d222e2ebb27332670deaeb7a6b5b4fc34da9a85fa7c0e390367aa09d7af9eaab",
+    "bytes": 10010
+  },
+  "artifact": {
+    "sha256": "f754fd006257c78ea3939cf601c35c40f5e0de13a6b98542f2074f172e9e2714",
+    "bytes": 782108
+  }
+}

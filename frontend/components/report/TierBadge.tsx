@@ -1,0 +1,2 @@
+const tierMeta = { 1: ['Tier 1 · Official', 'text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 border-emerald-500/30'], 2: ['Tier 2 · News', 'text-blue-700 dark:text-blue-300 bg-blue-500/10 border-blue-500/30'], 3: ['Tier 3 · Reference', 'text-muted-foreground bg-muted/50 border-border'], 4: ['Tier 4 · Web', 'text-muted-foreground bg-muted/50 border-border'] } as const
+export function TierBadge({ tier }: { tier: 1|2|3|4 }) { const [label, className] = tierMeta[tier]; return <span className={`rounded-full border px-2 py-1 text-[10px] ${className}`}>{label}</span> }

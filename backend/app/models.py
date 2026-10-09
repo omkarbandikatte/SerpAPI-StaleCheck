@@ -73,6 +73,7 @@ class CheckCreated(BaseModel):
 class CheckSummary(BaseModel):
     check_id: str
     title: str
+    owner_name: str
     doc_as_of: str
     status: Status
     created_at: datetime

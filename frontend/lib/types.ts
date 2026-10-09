@@ -5,4 +5,4 @@ export type Evidence = { url:string; title:string; source:string; domain:string;
 export type Claim = { id:string; text:string; span:{start:number;end:number}; type:ClaimType; subject:string; value:string; verdict:VerdictLabel; confidence:'high'|'medium'|'low'; updated_value:string|null; changed_around:string|null; reasoning:string; evidence:Evidence[]; engines_used:Engine[] }
 export type CheckStatus = { check_id:string; status:'queued'|'extracting'|'searching'|'verifying'|'done'|'failed'; progress:{done:number;total:number}; partial_claims:Claim[]; error?:string }
 export type Report = { check_id:string; doc_title:string; doc_as_of:string; checked_at:string; document_text:string; freshness_score:number; counts:Record<VerdictLabel,number>; claims:Claim[]; searches_used:number }
-export type CheckSummary = { check_id:string; title:string; doc_as_of:string; status:CheckStatus['status']; created_at:string; freshness_score:number; claim_count:number }
+export type CheckSummary = { check_id:string; title:string; owner_name:string; doc_as_of:string; status:CheckStatus['status']; created_at:string; freshness_score:number; claim_count:number }

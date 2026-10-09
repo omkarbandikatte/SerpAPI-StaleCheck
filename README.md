@@ -188,6 +188,8 @@ CREATE EXTENSION IF NOT EXISTS vector;
 CREATE TABLE public.checks (
 	id text PRIMARY KEY,
 	user_id uuid NOT NULL REFERENCES neon_auth."user"(id) ON DELETE CASCADE,
+	owner_name text NOT NULL,
+	owner_email text NOT NULL,
 	title text NOT NULL,
 	doc_as_of date NOT NULL,
 	status text NOT NULL CHECK (status IN (
@@ -257,6 +259,9 @@ Start FastAPI on port 8001:
 ```bash
 uvicorn app.main:app --reload --host 127.0.0.1 --port 8001
 ```
+
+For an existing database created before submitter identity was stored on each check, run
+`backend/migrations/001_add_check_owner_identity.sql` once before starting this version.
 
 API docs are available at `http://localhost:8001/docs`.
 

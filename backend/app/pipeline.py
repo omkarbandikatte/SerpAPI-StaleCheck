@@ -37,7 +37,7 @@ async def run_check(
     document: str | bytes,
 ) -> None:
     try:
-        await _set_status(store, check_id, "extracting")
+        await _set_status(store, check_id, user_id, "extracting")
         if isinstance(document, bytes):
             text = await asyncio.to_thread(extract_pdf, document)
         else:
@@ -49,7 +49,7 @@ async def run_check(
             raise ValueError(f"The document exceeds the {config.MAX_DOCUMENT_CHARS:,}-character limit.")
 
         extracted = await _extract_claims(text, doc_as_of)
-        await _set_status(store, check_id, "searching", total=len(extracted))
+        await _set_status(store, check_id, user_id, "searching", total=len(extracted))
 
         claims: list[Claim] = []
         searches_used = 0
@@ -88,6 +88,7 @@ async def run_check(
             await _set_status(
                 store,
                 check_id,
+                user_id,
                 "verifying",
                 done=len(claims),
                 total=len(extracted),
@@ -97,11 +98,11 @@ async def run_check(
             await asyncio.gather(*evidence_tasks)
 
         report = _build_report(check_id, title, doc_as_of, text, claims, searches_used)
-        await asyncio.to_thread(store.save_report, report)
-        await _set_status(store, check_id, "done", done=len(claims), total=len(claims), claims=claims)
+        await asyncio.to_thread(store.save_report, report, user_id)
+        await _set_status(store, check_id, user_id, "done", done=len(claims), total=len(claims), claims=claims)
     except Exception as error:
         logger.exception("Check %s failed", check_id)
-        await _set_status(store, check_id, "failed", error=_public_error(error))
+        await _set_status(store, check_id, user_id, "failed", error=_public_error(error))
 
 
 async def _extract_claims(text: str, doc_as_of: str) -> list[dict[str, str | int]]:
@@ -368,6 +369,7 @@ async def _gemini_json(prompt: str) -> dict[str, Any]:
 async def _set_status(
     store: PostgresStore,
     check_id: str,
+    user_id: UUID,
     state: str,
     *,
     done: int = 0,
@@ -386,6 +388,7 @@ async def _set_status(
             partial_claims=claims or [],
             error=error,
         ),
+        user_id,
     )
 
 

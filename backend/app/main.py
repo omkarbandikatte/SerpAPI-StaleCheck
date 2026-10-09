@@ -65,7 +65,16 @@ async def create_check(
 
 	check_id = uuid4().hex
 	document_title = title.strip() or "Untitled notes"
-	await asyncio.to_thread(store.create, check_id, current_user.id, document_title, parsed_date)
+	owner_name = current_user.name.strip() or current_user.email.strip() or "Unknown user"
+	await asyncio.to_thread(
+		store.create,
+		check_id,
+		current_user.id,
+		owner_name,
+		current_user.email.strip(),
+		document_title,
+		parsed_date,
+	)
 	task = asyncio.create_task(
 		run_check(store, check_id, current_user.id, document_title, doc_as_of, document),
 		name=f"check-{check_id}",

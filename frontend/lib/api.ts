@@ -50,11 +50,20 @@ async function authenticatedFetch(path: string, init?: RequestInit) {
   return response
 }
 
+async function responseError(response: Response, fallback: string) {
+  try {
+    const result = await response.json() as { detail?: string }
+    return new Error(result.detail || fallback)
+  } catch {
+    return new Error(fallback)
+  }
+}
+
 export async function getCheckStatus(id: string): Promise<CheckStatus> {
   const response = await authenticatedFetch(`/api/checks/${id}`); if (!response.ok) throw new Error('Could not load check status'); return response.json()
 }
 export async function getReport(id: string): Promise<Report> { const response = await authenticatedFetch(`/api/checks/${id}/report`); if (!response.ok) throw new Error('Could not load report'); return response.json() }
-export async function createCheck(form: FormData) { const response = await authenticatedFetch('/api/checks', { method: 'POST', body: form }); if (!response.ok) throw new Error('Could not start check'); return response.json() as Promise<{ check_id: string }> }
+export async function createCheck(form: FormData) { const response = await authenticatedFetch('/api/checks', { method: 'POST', body: form }); if (!response.ok) throw await responseError(response, 'Could not start check'); return response.json() as Promise<{ check_id: string }> }
 export async function listChecks(): Promise<CheckSummary[]> {
   if (!historyRequest) {
     historyRequest = authenticatedFetch('/api/checks')

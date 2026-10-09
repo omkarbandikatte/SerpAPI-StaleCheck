@@ -34,15 +34,26 @@ class PostgresStore:
             open=True,
         )
 
-    def create(self, check_id: str, user_id: UUID, title: str, doc_as_of: date) -> CheckStatus:
+    def create(
+        self,
+        check_id: str,
+        user_id: UUID,
+        owner_name: str,
+        owner_email: str,
+        title: str,
+        doc_as_of: date,
+    ) -> CheckStatus:
         status = CheckStatus(check_id=check_id, status="queued")
         with self.pool.connection() as connection:
             connection.execute(
-                """INSERT INTO checks (id, user_id, title, doc_as_of, status, progress, partial_claims)
-                   VALUES (%s, %s, %s, %s, %s, %s, %s)""",
+                """INSERT INTO checks
+                   (id, user_id, owner_name, owner_email, title, doc_as_of, status, progress, partial_claims)
+                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""",
                 (
                     check_id,
                     user_id,
+                    owner_name,
+                    owner_email,
                     title,
                     doc_as_of,
                     status.status,
@@ -68,17 +79,18 @@ class PostgresStore:
             error=row["error"],
         )
 
-    def save_status(self, status: CheckStatus) -> None:
+    def save_status(self, status: CheckStatus, user_id: UUID) -> None:
         with self.pool.connection() as connection:
             connection.execute(
                 """UPDATE checks SET status = %s, progress = %s, partial_claims = %s,
-                   error = %s, updated_at = now() WHERE id = %s""",
+                   error = %s, updated_at = now() WHERE id = %s AND user_id = %s""",
                 (
                     status.status,
                     Jsonb(status.progress.model_dump(mode="json")),
                     Jsonb([claim.model_dump(mode="json") for claim in status.partial_claims]),
                     status.error,
                     status.check_id,
+                    user_id,
                 ),
             )
 
@@ -92,18 +104,24 @@ class PostgresStore:
             return None
         return Report.model_validate(row["report"])
 
-    def save_report(self, report: Report) -> None:
+    def save_report(self, report: Report, user_id: UUID) -> None:
         with self.pool.connection() as connection:
             connection.execute(
                 """UPDATE checks SET report = %s, document_text = %s, searches_used = %s,
-                   updated_at = now() WHERE id = %s""",
-                (Jsonb(report.model_dump(mode="json")), report.document_text, report.searches_used, report.check_id),
+                   updated_at = now() WHERE id = %s AND user_id = %s""",
+                (
+                    Jsonb(report.model_dump(mode="json")),
+                    report.document_text,
+                    report.searches_used,
+                    report.check_id,
+                    user_id,
+                ),
             )
 
     def list_checks(self, user_id: UUID, limit: int = 30) -> list[dict[str, object]]:
         with self.pool.connection() as connection:
             rows = connection.execute(
-                """SELECT id AS check_id, title, doc_as_of::text, status, created_at,
+                """SELECT id AS check_id, title, owner_name, doc_as_of::text, status, created_at,
                    COALESCE((report->>'freshness_score')::integer, 0) AS freshness_score,
                    jsonb_array_length(COALESCE(report->'claims', '[]'::jsonb)) AS claim_count
                    FROM checks WHERE user_id = %s ORDER BY created_at DESC LIMIT %s""",

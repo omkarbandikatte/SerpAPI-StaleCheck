@@ -14,7 +14,7 @@ HEALTH_CHECK_INTERVAL_SECONDS = 300
 
 def check_connection(connection: Connection) -> None:
     now = monotonic()
-    last_probe = getattr(connection, "_stalecheck_last_probe", now)
+    last_probe = getattr(connection, "_stalecheck_last_probe", 0.0)
     if connection.closed or now - last_probe >= HEALTH_CHECK_INTERVAL_SECONDS:
         ConnectionPool.check_connection(connection)
         connection._stalecheck_last_probe = now

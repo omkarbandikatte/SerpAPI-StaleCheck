@@ -7,7 +7,6 @@ import { useRouter } from 'next/navigation'
 import { FormEvent, useEffect, useState } from 'react'
 
 import { authClient } from '@/lib/auth/client'
-import { listChecks } from '@/lib/api'
 
 function authErrorMessage(error: unknown, fallback: string) {
   const message = error instanceof Error ? error.message : ''
@@ -52,7 +51,6 @@ export function AuthForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
         setPending(false)
         return
       }
-      void listChecks().catch(() => undefined)
       router.replace('/app')
     } catch (authError) {
       setError(authErrorMessage(authError, 'Authentication failed. Please try again.'))
